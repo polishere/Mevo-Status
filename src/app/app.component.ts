@@ -56,7 +56,7 @@ declare var ol: any;
   styleUrls: ['./app.component.css'],
   providers: [DynamicScriptLoaderService]
 })
-export class AppComponent implements OnInit{
+export class AppComponent implements OnInit {
   title = 'mevoStatus';
   stations: Station[] = [];
   batteries: Battery[] = [];
@@ -113,26 +113,17 @@ export class AppComponent implements OnInit{
       for (const item of this.stationWithAtLeastOneFreeBike) {
           const longitude = item.lng;
           const latitude = item.lat;
-          /*....
-          * now get your specific icon...('..../ic_customMarker.png')
-          * by e.g. switch case...
-          */
-          const iconPath = 'https://image.flaticon.com/icons/svg/33/33622.svg';
-          // create Feature... with coordinates
+
           const marker = new ol.Feature({
              geometry: new ol.geom.Point(
                 ol.proj.fromLonLat([longitude, latitude])
-             ),  // Cordinates of New York's Town Hall
-             // fill: new ol.style.Fill({options: {color: '#ffcc66' }}),
-            // text: new ol.style.Text({
-            //   text: `Dostepne rowery: ${item.bikes - item.booked_bikes}`
-            // })
+             ),
           });
 
           marker.setStyle(new ol.style.Style({
             geometry: new ol.geom.Point(
             ol.proj.fromLonLat([longitude, latitude])
-           ),  // Cordinates of New York's Town Hall
+           ), 
            fill: new ol.style.Fill({
             color: 'rgba(255,255,255,0.4)'
           }),
@@ -148,34 +139,14 @@ export class AppComponent implements OnInit{
             }),
             offsetY: 0,
             backgroundFill: '#ff0',
-            // get the text from the feature - `this` is ol.Feature
-            // and show only under certain resolution
             text: `${item.bike_list.length - item.booked_bikes}: ` + item.bike_list.map(bike => `${bike.pedelec_battery}%`).join (', ')
           })
-          //   text: new ol.style.Text({
-          //   text: `${item.bikes - item.booked_bikes}`
-          // })
         }));
-
-        //   marker.setStyle( new ol.style.Style({
-        //     label : `Dostepne rowery: ${item.bikes - item.booked_bikes}`,
-        //     pointRadius: 10,
-        //     fillColor: '#ffcc66',
-        //     // fillOpacity: 0.8,
-        //     // strokeColor: '#cc6633',
-        //     // strokeWidth: 2,
-        //     // strokeOpacity: 0.8
-        // }));
-
           features.push(marker);
       }
-      /*
-      * create vector source
-      * you could set the style for all features in your vectoreSource as well
-      */
+
       const vectorSource = new ol.source.Vector({
-          features      // add an array of features
-          // ,style: iconStyle     //to set the style for all your features...
+          features
       });
       const vectorLayer = new ol.layer.Vector({
           source: vectorSource
