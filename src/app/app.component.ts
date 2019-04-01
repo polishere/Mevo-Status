@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
 import { DynamicScriptLoaderService } from './services/dynamic-script-loader.service';
-import { ConsoleReporter } from 'jasmine';
 
 interface Station {
   uid: string;
@@ -145,7 +144,7 @@ export class AppComponent implements OnInit {
       source: vectorSource
     });
     this.map.getLayers().forEach(element => {
-      if (element.type === 'VECTOR'){
+      if (element.type === 'VECTOR') {
       this.map.removeLayer(element);
       }
     });
