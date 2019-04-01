@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { DynamicScriptLoaderService } from './services/dynamic-script-loader.service';
+import { ConsoleReporter } from 'jasmine';
 
 interface Station {
   uid: string;
@@ -62,9 +63,12 @@ export class AppComponent implements OnInit {
   batteries: Battery[] = [];
   bikes: Bike[] = [];
   stationWithAtLeastOneFreeBike: Station[] = [];
+  stationWithAtLeastOneFreeBikeOld: Station[] = [];
   bikesWithMinBat = 0;
+  minBattery = 50;
   map: any;
   gdansk: Station[] = [];
+  vectorLayer: any;
   constructor(private dynamicScriptLoader: DynamicScriptLoaderService) {}
 
   ngOnInit() {
@@ -84,6 +88,71 @@ export class AppComponent implements OnInit {
     });
   }
 
+  updateBikes() {
+    this.bikesWithMinBat =  this.bikes.filter(bike => bike.battery >= this.minBattery).length;
+    const stationsWithBikes = this.stations.filter(station => station.bikes > 0);
+    this.stationWithAtLeastOneFreeBike =
+        stationsWithBikes.map(station =>
+          ({...station, bike_list: station.bike_list.filter(bike => bike.pedelec_battery >= this.minBattery)}))
+          .filter(st => st.bike_list.length > 0);
+    console.log('Stations on map: ', this.stationWithAtLeastOneFreeBike.length );
+    const view = this.map.getView();
+    view.setCenter(ol.proj.fromLonLat([this.stationWithAtLeastOneFreeBike[0].lng, this.stationWithAtLeastOneFreeBike[0].lat]));
+    view.setZoom(10);
+
+    console.log(this.stations.filter(st => st.bike_list.length !== st.bikes));
+    const features = [];
+          // iterate through array...
+    for (const item of this.stationWithAtLeastOneFreeBike) {
+    const longitude = item.lng;
+    const latitude = item.lat;
+
+    const marker = new ol.Feature({
+    geometry: new ol.geom.Point(
+      ol.proj.fromLonLat([longitude, latitude])
+      ),
+    });
+
+    marker.setStyle(new ol.style.Style({
+      geometry: new ol.geom.Point(
+      ol.proj.fromLonLat([longitude, latitude])
+      ),
+      fill: new ol.style.Fill({
+      color: 'rgba(255,255,255,0.4)'
+    }),
+    stroke: new ol.style.Stroke({
+      color: '#3399CC',
+      width: 1.25
+    }),
+    text: new ol.style.Text({
+      font: '15px Calibri,sans-serif',
+      fill: new ol.style.Fill({ color: '#f00' }),
+      stroke: new ol.style.Stroke({
+        color: '#f00', width: 2
+      }),
+      offsetY: 0,
+      backgroundFill: '#ff0',
+      text: `${item.bike_list.length - item.booked_bikes}: ` + item.bike_list.map(bike => `${bike.pedelec_battery}%`).join (', ')
+    })
+  }));
+    features.push(marker);
+}
+
+    const vectorSource = new ol.source.Vector({
+    features
+    });
+    this.vectorLayer = new ol.layer.Vector({
+      source: vectorSource
+    });
+    this.map.getLayers().forEach(element => {
+      if (element.type === 'VECTOR'){
+      this.map.removeLayer(element);
+      }
+    });
+    this.map.addLayer(this.vectorLayer);
+
+  }
+
   private loadScripts() {
     // You can load multiple scripts by just providing the key as argument into load method of the service
     this.dynamicScriptLoader.load('Mevo').then(data => {
@@ -97,12 +166,18 @@ export class AppComponent implements OnInit {
 
       const stationsWithBikes = this.stations.filter(station => station.bikes > 0);
       console.log('Stations with at least one active bike', stationsWithBikes.length);
-      this.stationWithAtLeastOneFreeBike = stationsWithBikes.filter(station => station.bike_list.length - station.booked_bikes > 0);
+      this.stationWithAtLeastOneFreeBikeOld = stationsWithBikes.filter(station => station.bike_list.length - station.booked_bikes > 0);
+
+      this.stationWithAtLeastOneFreeBike =
+        stationsWithBikes.map(station =>
+          ({...station, bike_list: station.bike_list.filter(bike => bike.pedelec_battery > this.minBattery)}))
+          .filter(st => st.bike_list.length > 0);
       console.log('Stations with at least one free bike', this.stationWithAtLeastOneFreeBike.length);
       this.gdansk = this.stationWithAtLeastOneFreeBike.filter(x => x.city === 'Gdańsk');
 
+      this.bikesWithMinBat =  this.bikes.filter(bike => bike.battery > this.minBattery).length;
 
-      this.bikesWithMinBat =  this.bikes.filter(bike => bike.battery > 50).length;
+
       const view = this.map.getView();
       view.setCenter(ol.proj.fromLonLat([this.stationWithAtLeastOneFreeBike[0].lng, this.stationWithAtLeastOneFreeBike[0].lat]));
       view.setZoom(10);
@@ -148,13 +223,10 @@ export class AppComponent implements OnInit {
       const vectorSource = new ol.source.Vector({
           features
       });
-      const vectorLayer = new ol.layer.Vector({
+      this.vectorLayer = new ol.layer.Vector({
           source: vectorSource
       });
-      this.map.addLayer(vectorLayer);
-
-
-
+      this.map.addLayer(this.vectorLayer);
 
       console.log('Bikes with min 80% battery:', this.bikes.filter(bike => bike.battery > 80).length);
 

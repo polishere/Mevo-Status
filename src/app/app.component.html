@@ -3,11 +3,11 @@
   <h4>
     Welcome to {{ title }}!
     <br>
-    Stacje z min 1 dostepnym rowerem: {{ this.stationWithAtLeastOneFreeBike.length}}. 
+    Stacje z min 1 dostepnym rowerem: {{ this.stationWithAtLeastOneFreeBikeOld.length}}. 
     <br>
     W tym w Gdańsku: {{ gdansk.length }}
     <br>
-    Rowery z min 50%: {{bikesWithMinBat}}
+    Rowery z min <input [(ngModel)]="minBattery" (change)="updateBikes()"/>%: {{bikesWithMinBat}}
   </h4>
   <div id="map" class="map"></div>
 </div>
