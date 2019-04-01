@@ -68,6 +68,7 @@ export class AppComponent implements OnInit {
   map: any;
   gdansk: Station[] = [];
   vectorLayer: any;
+  reserved = 0;
   constructor(private dynamicScriptLoader: DynamicScriptLoaderService) {}
 
   ngOnInit() {
@@ -90,6 +91,7 @@ export class AppComponent implements OnInit {
   updateBikes() {
     this.bikesWithMinBat =  this.bikes.filter(bike => bike.battery >= this.minBattery).length;
     const stationsWithBikes = this.stations.filter(station => station.bikes > 0);
+    this.reserved = this.stations.reduce((acc: number, station: Station) => acc + station.booked_bikes, 0);
     this.stationWithAtLeastOneFreeBike =
         stationsWithBikes.map(station =>
           ({...station, bike_list: station.bike_list.filter(bike => bike.pedelec_battery >= this.minBattery)}))
@@ -157,7 +159,7 @@ export class AppComponent implements OnInit {
     this.dynamicScriptLoader.load('Mevo').then(data => {
       this.batteries = JSON.parse(NEXTBIKE_BATTERIES) as Battery[];
       this.stations = JSON.parse(NEXTBIKE_PLACES_DB)[0].places as Station[];
-
+      this.reserved = this.stations.reduce((acc: number, station: Station) => acc + station.booked_bikes, 0);
       this.stations.forEach(station => this.bikes.push(...station.bike_list.map(bike => {
           const battery: number = this.batteries.filter(bat => bat.bike === bike.number)[0].battery;
           return {...bike, battery};
