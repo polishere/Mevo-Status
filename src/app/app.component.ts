@@ -1,11 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { from } from 'rxjs/Observable/from';
-import { map } from 'rxjs/operator/map';
 
 import { DynamicScriptLoaderService } from './services/dynamic-script-loader.service';
-import { markParentViewsForCheck } from '@angular/core/src/view/util';
-import { AgmRectangle } from '@agm/core';
 
 interface Station {
   uid: string;
