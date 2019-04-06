@@ -9,7 +9,14 @@
     <br>
     Rowery z min <input [(ngModel)]="minBattery" (change)="updateBikes()"/>%: {{bikesWithMinBat}} / {{bikes.length}} dostepnych ({{ reserved }} zarezerwowanych)
   </h4>
-  <div id="map" class="map"></div>
+  <div id="map" class="map"></div> 
+
+  <!-- Rowery:
+  <div *ngFor="let city of getCities()">
+    {{city }} : {{ getStatsPerCity()[city].availableBikes }} : {{ getStatsPerCity()[city].reservedBikes }} : {{ getStatsPerCity()[city].bikes.length }} ({{getStatsPerCity()[city].allBikes}})
+  </div>
+
+  Alone Bikes: {{ getBikesAlone().length }} -->
 </div>
 
 <router-outlet></router-outlet>
